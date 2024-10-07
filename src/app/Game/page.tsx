@@ -1,13 +1,7 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
-
-const wordsList = [
-  "infrastructure",
-  "optimization",
-  "collaboration",
-  "negotiation",
-  "initiative",
-];
+import { wordsList } from "../conponents/WordList";
 
 const TypingGame = () => {
   // ゲームの状態
@@ -15,6 +9,7 @@ const TypingGame = () => {
   const [typedWord, setTypedWord] = useState(""); // プレイヤーが入力した単語
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
+  const router = useRouter();
 
   // フォーカス管理用のref
   const inputRef = useRef<HTMLInputElement>(null);
@@ -27,18 +22,18 @@ const TypingGame = () => {
     }
 
     const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval); // タイマーを停止
+          alert("Finish!");
+          router.push("/Result"); // 結果ページに遷移
+        }
+        return prev - 1;
+      });
+    }, 10);
 
     return () => clearInterval(interval); // クリーンアップ用
   }, []);
-
-  // タイマーが0になったらゲームを終了
-  useEffect(() => {
-    if (timer === 0) {
-      alert("Time's up! Your score is " + score);
-    }
-  }, [timer]);
 
   // 単語の生成
   const setRandomWord = () => {
