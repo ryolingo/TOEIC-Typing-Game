@@ -1,44 +1,52 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
 
 const TypingGame = () => {
   // ゲームの状態
   const [word, setWord] = useState("ESMAscript");
-  const [userInput, setUserInput] = useState(""); // ユーザーの入力を管理
+  const [userInput, setUserInput] = useState(""); // 修正：useInput -> userInput
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
   const router = useRouter();
+
+  // フォーカス管理用のref
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // ランダムな単語を設定する関数
   const setRandomWord = () => {
     const randomIndex = Math.floor(Math.random() * wordsList.length);
     setWord(wordsList[randomIndex]);
-    setUserInput(""); // 新しい単語が来るたびにユーザー入力をリセット
+    setUserInput(""); // 新しい単語が出たら入力をクリア
   };
 
-  // 単語の表示を作成
+  // ユーザーの入力を管理
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+
+    // 正しい部分だけ入力できるようにする
+    if (value === word.slice(0, value.length)) {
+      setUserInput(value); // 正しい部分だけを更新
+
+      // 単語が完全に一致したら次の単語に移行
+      if (value === word) {
+        setScore((prevScore) => prevScore + 1); // スコアを更新
+        setRandomWord(); // 次の単語に移行
+      }
+    }
+  };
+
+  // 単語の表示を作成（正解した部分は強調）
   const renderWord = () => {
     return word.split("").map((char, index) => {
-      let color = "black"; // 初期状態は黒色
-
-      // ユーザーが入力した文字と比較
+      let color = "black"; // デフォルトは黒
       if (index < userInput.length) {
-        if (char === userInput[index]) {
-          color = "green"; // 正解は緑色
-        } else {
-          color = "red"; // 不正解は赤色
-        }
+        color = char === userInput[index] ? "green" : "red"; // 正解は緑、不正解は赤
       }
-
       return (
-        <span
-          key={index}
-          style={{ color, fontWeight: "bold", margin: "0 2px" }}
-        >
-          {index < userInput.length ? userInput[index] : char}{" "}
-          {/* 入力した文字を表示 */}
+        <span key={index} style={{ color }}>
+          {char}
         </span>
       );
     });
@@ -47,6 +55,9 @@ const TypingGame = () => {
   // ゲーム開始時に最初の単語をセットし、タイマーを開始
   useEffect(() => {
     setRandomWord();
+    if (inputRef.current) {
+      inputRef.current.focus(); // ページが読み込まれたときに自動でフォーカス
+    }
 
     const interval = setInterval(() => {
       setTimer((prev) => {
@@ -62,34 +73,6 @@ const TypingGame = () => {
     return () => clearInterval(interval); // クリーンアップ用
   }, []);
 
-  // キー入力処理
-  const handleKeyPress = (e: KeyboardEvent) => {
-    if (timer > 0 && e.key.length === 1) {
-      // タイマーが動いていて、1文字のキーが押された場合
-      const newUserInput = userInput + e.key;
-
-      // 入力が正しい場合のみ、ユーザー入力を更新
-      if (newUserInput.length <= word.length) {
-        setUserInput(newUserInput);
-      } else {
-      }
-
-      // 単語が完全に入力された場合、スコアを増やして新しい単語を設定
-      if (newUserInput === word) {
-        setScore((prevScore) => prevScore + 1);
-        setRandomWord();
-      }
-    }
-  };
-
-  // キー入力イベントを登録
-  useEffect(() => {
-    window.addEventListener("keypress", handleKeyPress);
-    return () => {
-      window.removeEventListener("keypress", handleKeyPress);
-    };
-  }, [userInput, timer]);
-
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>Typing Game</h1>
@@ -98,6 +81,14 @@ const TypingGame = () => {
       <h2>
         <div>{renderWord()}</div>
       </h2>
+      <input
+        ref={inputRef}
+        type="text"
+        value={userInput}
+        onChange={handleInputChange}
+        style={{ fontSize: "24px", padding: "10px", width: "300px" }}
+        disabled={timer === 0} // タイマーが0なら入力を無効化
+      />
     </div>
   );
 };
