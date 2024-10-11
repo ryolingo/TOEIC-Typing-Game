@@ -5,7 +5,8 @@ import { wordsList } from "../conponents/WordList";
 
 const TypingGame = () => {
   // ゲームの状態
-  const [word, setWord] = useState("ESMAscript");
+  const [word, setWord] = useState("");
+  const [meaning, setMeaning] = useState("");
   const [userInput, setUserInput] = useState(""); // 修正：useInput -> userInput
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
@@ -17,7 +18,9 @@ const TypingGame = () => {
   // ランダムな単語を設定する関数
   const setRandomWord = () => {
     const randomIndex = Math.floor(Math.random() * wordsList.length);
-    setWord(wordsList[randomIndex]);
+    const randomWord = wordsList[randomIndex];
+    setWord(randomWord.word);
+    setMeaning(randomWord.meaning);
     setUserInput(""); // 新しい単語が出たら入力をクリア
   };
 
@@ -51,8 +54,8 @@ const TypingGame = () => {
       );
     });
   };
+  const scoreRef = useRef(score);
 
-  // ゲーム開始時に最初の単語をセットし、タイマーを開始
   useEffect(() => {
     setRandomWord();
     if (inputRef.current) {
@@ -64,14 +67,20 @@ const TypingGame = () => {
         if (prev <= 1) {
           clearInterval(interval); // タイマーを停止
           alert("Finish!");
-          router.push("/Result"); // 結果ページに遷移
+          router.push(`/Result?score=${scoreRef.current}`); // 結果ページに遷移
         }
         return prev - 1;
       });
-    }, 1000);
+    }, 1000); // タイマーを1秒に設定
 
-    return () => clearInterval(interval); // クリーンアップ用
+    // useEffectのクリーンアップ関数
+    return () => clearInterval(interval);
   }, []);
+
+  // scoreが更新されるたびにscoreRef.currentも更新
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -79,6 +88,7 @@ const TypingGame = () => {
       <h2>Time: {timer} seconds</h2>
       <h2>Score: {score}</h2>
       <h2>
+        <p>{meaning}</p>
         <div>{renderWord()}</div>
       </h2>
       <input
