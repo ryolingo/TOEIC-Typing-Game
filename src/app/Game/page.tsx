@@ -1,24 +1,34 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
 
 const TypingGame = () => {
   // ゲームの状態
   const [word, setWord] = useState("");
+  const searchParams = useSearchParams();
   const [meaning, setMeaning] = useState("");
   const [userInput, setUserInput] = useState(""); // 修正：useInput -> userInput
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
-  const router = useRouter();
+  const level = searchParams.get("level") || "easy";
+  const [incorrectWords, setIncorrectWords] = useState<
+    { word: string; meaning: string }[]
+  >([]);
 
+  const router = useRouter();
   // フォーカス管理用のref
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const getLevelWords = () => {
+    return wordsList[level as keyof typeof wordsList] || wordsList.easy;
+  };
+
   // ランダムな単語を設定する関数
   const setRandomWord = () => {
-    const randomIndex = Math.floor(Math.random() * wordsList.length);
-    const randomWord = wordsList[randomIndex];
+    const levelWords = getLevelWords();
+    const randomIndex = Math.floor(Math.random() * levelWords.length);
+    const randomWord = levelWords[randomIndex];
     setWord(randomWord.word);
     setMeaning(randomWord.meaning);
     setUserInput(""); // 新しい単語が出たら入力をクリア
@@ -27,19 +37,16 @@ const TypingGame = () => {
   // ユーザーの入力を管理
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-
-    // 正しい部分だけ入力できるようにする
     if (value === word.slice(0, value.length)) {
-      setUserInput(value); // 正しい部分だけを更新
-
-      // 単語が完全に一致したら次の単語に移行
+      setUserInput(value);
       if (value === word) {
-        setScore((prevScore) => prevScore + 1); // スコアを更新
-        setRandomWord(); // 次の単語に移行
+        setScore((prevScore) => prevScore + 1);
+        setRandomWord();
+      } else {
+        setIncorrectWords((prev) => [...prev, { word, meaning }]);
       }
     }
   };
-
   // 単語の表示を作成（正解した部分は強調）
   const renderWord = () => {
     return word.split("").map((char, index) => {
