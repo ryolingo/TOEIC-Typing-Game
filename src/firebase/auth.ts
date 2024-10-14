@@ -1,15 +1,17 @@
-import { auth } from "./firebaseConfig";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  UserCredential,
+} from "firebase/auth";
+import { auth } from "./firebase";
 
-// Google認証プロバイダーのインスタンスを作成
 const provider = new GoogleAuthProvider();
 
-// Googleでサインイン
-export const signInWithGoogle = () => {
-  return signInWithPopup(auth, provider);
-};
-
-// サインアウト
-export const logout = () => {
-  return signOut(auth);
+export const signInWithGoogle = async (): Promise<UserCredential> => {
+  try {
+    return await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error("Error signing in with Google:", error);
+    throw error;
+  }
 };
