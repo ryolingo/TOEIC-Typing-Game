@@ -7,7 +7,7 @@ export default function LevelSelect() {
   const router = useRouter();
 
   const handleLevelSelect = (level: string) => {
-    router.push(`/TypingGame?level=${level}`); // 選択したレベルをURLに含めて次の画面に遷移
+    router.push(`/Game?level=${level}`); // 選択したレベルをURLに含めて次の画面に遷移
   };
 
   return (
