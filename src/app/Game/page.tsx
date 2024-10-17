@@ -2,6 +2,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "@/firebase/firebase";
 
 const TypingGame = () => {
   // ゲームの状態
@@ -15,7 +17,7 @@ const TypingGame = () => {
   const [incorrectWords, setIncorrectWords] = useState<
     { word: string; meaning: string }[]
   >([]);
-
+  const [gameOver, setgameOver] = useState(false);
   const router = useRouter();
   // フォーカス管理用のref
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,7 +36,25 @@ const TypingGame = () => {
     setUserInput(""); // 新しい単語が出たら入力をクリア
   };
 
-  // ユーザーの入力を管理
+  //間違えた単語の関数
+  const saveIncorrectWord = async (
+    word: string,
+    meaning: string,
+    score: number
+  ) => {
+    try {
+      const docRef = await addDoc(collection(db, "incorrectWords"), {
+        word,
+        meaning,
+        score, // スコアも追加して保存
+        timestamp: new Date(),
+      });
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     if (value === word.slice(0, value.length)) {
@@ -42,12 +62,15 @@ const TypingGame = () => {
       if (value === word) {
         setScore((prevScore) => prevScore + 1);
         setRandomWord();
-      } else {
-        setIncorrectWords((prev) => [...prev, { word, meaning }]);
       }
+    } else {
+      saveIncorrectWord(word, meaning, score); // Firestoreに保存
+      setIncorrectWords((prev) => [...prev, { word, meaning }]); // ローカルでも保存
+      setUserInput("");
     }
   };
-  // 単語の表示を作成（正解した部分は強調）
+
+  //単語の表示を作成（正解した部分は強調）
   const renderWord = () => {
     return word.split("").map((char, index) => {
       let color = "black"; // デフォルトは黒
@@ -73,12 +96,13 @@ const TypingGame = () => {
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(interval); // タイマーを停止
+          setgameOver(true);
           alert("Finish!");
           router.push(`/Result?score=${scoreRef.current}`); // 結果ページに遷移
         }
         return prev - 1;
       });
-    }, 1000); // タイマーを1秒に設定
+    }, 100); // タイマーを1秒に設定
 
     // useEffectのクリーンアップ関数
     return () => clearInterval(interval);
@@ -109,5 +133,4 @@ const TypingGame = () => {
     </div>
   );
 };
-
 export default TypingGame;
