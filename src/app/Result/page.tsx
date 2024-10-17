@@ -1,4 +1,3 @@
-// app/Score/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -10,14 +9,15 @@ import {
   Button,
 } from "@mui/material";
 import { db } from "@/firebase/firebase";
-import { getDocs, collection } from "firebase/firestore";
+import { getDocs, collection, query, where } from "firebase/firestore";
 
 export default function ScorePage() {
   const searchParams = useSearchParams();
-  const score = searchParams.get("score") || "0"; // スコアを取得、取得できなければ"0"に設定
+  const score = searchParams.get("score") || "0"; // スコアを取得
+  const gameId = searchParams.get("gameId"); // gameIdをクエリパラメータから取得
+  const level = searchParams.get("level");
   const router = useRouter();
 
-  // 間違えた単語リストの状態を管理
   const [incorrectWords, setIncorrectWords] = useState<
     { word: string; meaning: string }[]
   >([]);
@@ -25,23 +25,30 @@ export default function ScorePage() {
   // Firestoreから間違えた単語を取得
   useEffect(() => {
     const fetchIncorrectWords = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "IncorrectWords"));
-        const words = querySnapshot.docs.map((doc) => ({
-          word: doc.data().word,
-          meaning: doc.data().meaning,
-        }));
-        setIncorrectWords(words);
-      } catch (error) {
-        console.error("Error fetching incorrect words: ", error);
+      if (gameId) {
+        // gameIdが存在する場合のみクエリを実行
+        try {
+          const q = query(
+            collection(db, "incorrectWords"),
+            where("gameId", "==", gameId)
+          );
+          const querySnapshot = await getDocs(q);
+          const words = querySnapshot.docs.map((doc) => ({
+            word: doc.data().word,
+            meaning: doc.data().meaning,
+          }));
+          setIncorrectWords(words);
+        } catch (error) {
+          console.error("Error fetching incorrect words: ", error);
+        }
       }
     };
 
     fetchIncorrectWords();
-  }, []);
+  }, [gameId]);
 
   const handlePlayAgain = () => {
-    router.push("/Game"); // ゲームページに遷移
+    router.push(`/Game?level=${level}`); // ゲームページに遷移
   };
 
   return (
