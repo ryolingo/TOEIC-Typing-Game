@@ -4,9 +4,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
+import { v4 as uuidv4 } from "uuid";
 
 const TypingGame = () => {
   // ゲームの状態
+  const [gameId] = useState(uuidv4());
   const [word, setWord] = useState("");
   const searchParams = useSearchParams();
   const [meaning, setMeaning] = useState("");
@@ -40,7 +42,8 @@ const TypingGame = () => {
   const saveIncorrectWord = async (
     word: string,
     meaning: string,
-    score: number
+    score: number,
+    gameId: string
   ) => {
     try {
       const docRef = await addDoc(collection(db, "incorrectWords"), {
@@ -48,8 +51,9 @@ const TypingGame = () => {
         meaning,
         score, // スコアも追加して保存
         timestamp: new Date(),
+        gameId,
       });
-      console.log("Document written with ID: ", docRef.id);
+      console.log("Document written with ID: ", gameId);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
@@ -57,15 +61,19 @@ const TypingGame = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    if (value === word.slice(0, value.length)) {
-      setUserInput(value);
+    setUserInput(value);
+    if (value.length === word.length) {
       if (value === word) {
+        // 正解の場合、スコアを加算し、新しい単語をセット
         setScore((prevScore) => prevScore + 1);
-        setRandomWord();
+      } else {
+        // 不正解の場合、Firestoreに追加
+        saveIncorrectWord(word, meaning, score, gameId);
+        setIncorrectWords((prev) => [...prev, { word, meaning }]);
       }
-    } else {
-      saveIncorrectWord(word, meaning, score); // Firestoreに保存
-      setIncorrectWords((prev) => [...prev, { word, meaning }]); // ローカルでも保存
+
+      // 次の単語をセットし、ユーザー入力をリセット
+      setRandomWord();
       setUserInput("");
     }
   };
@@ -98,7 +106,9 @@ const TypingGame = () => {
           clearInterval(interval); // タイマーを停止
           setgameOver(true);
           alert("Finish!");
-          router.push(`/Result?score=${scoreRef.current}`); // 結果ページに遷移
+          router.push(
+            `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
+          ); // 結果ページに遷移
         }
         return prev - 1;
       });
