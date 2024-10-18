@@ -16,13 +16,14 @@ const TypingGame = () => {
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
   const level = searchParams.get("level") || "easy";
-  const [incorrectWords, setIncorrectWords] = useState<
-    { word: string; meaning: string }[]
-  >([]);
+  const [mistyped, setMistyped] = useState(false);
   const [gameOver, setgameOver] = useState(false);
   const router = useRouter();
   // フォーカス管理用のref
   const inputRef = useRef<HTMLInputElement>(null);
+  const [incorrectWords, setIncorrectWords] = useState<
+    { word: string; meaning: string }[]
+  >([]);
 
   const getLevelWords = () => {
     return wordsList[level as keyof typeof wordsList] || wordsList.easy;
@@ -58,21 +59,16 @@ const TypingGame = () => {
       console.error("Error adding document: ", e);
     }
   };
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setUserInput(value);
-    if (value.length === word.length) {
-      if (value === word) {
-        // 正解の場合、スコアを加算し、新しい単語をセット
-        setScore((prevScore) => prevScore + 1);
-      } else {
-        // 不正解の場合、Firestoreに追加
-        saveIncorrectWord(word, meaning, score, gameId);
-        setIncorrectWords((prev) => [...prev, { word, meaning }]);
-      }
 
-      // 次の単語をセットし、ユーザー入力をリセット
+    if (!mistyped && value !== word.slice(0, value.length)) {
+      setMistyped(true);
+      saveIncorrectWord(word, meaning, score, gameId);
+    }
+    if (value === word) {
+      setScore((prevScore) => prevScore + 1);
       setRandomWord();
       setUserInput("");
     }
