@@ -12,18 +12,15 @@ const TypingGame = () => {
   const [word, setWord] = useState("");
   const searchParams = useSearchParams();
   const [meaning, setMeaning] = useState("");
-  const [userInput, setUserInput] = useState(""); // 修正：useInput -> userInput
+  const [userInput, setUserInput] = useState(""); // ユーザーの入力
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
   const level = searchParams.get("level") || "easy";
   const [mistyped, setMistyped] = useState(false);
-  const [gameOver, setgameOver] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
   const router = useRouter();
-  // フォーカス管理用のref
   const inputRef = useRef<HTMLInputElement>(null);
-  const [incorrectWords, setIncorrectWords] = useState<
-    { word: string; meaning: string }[]
-  >([]);
+  const scoreRef = useRef(score);
 
   const getLevelWords = () => {
     return wordsList[level as keyof typeof wordsList] || wordsList.easy;
@@ -37,36 +34,36 @@ const TypingGame = () => {
     setWord(randomWord.word);
     setMeaning(randomWord.meaning);
     setUserInput(""); // 新しい単語が出たら入力をクリア
+    setMistyped(false); // ミスタイプフラグをリセット
   };
 
-  //間違えた単語の関数
+  // 間違えた単語を保存する関数
   const saveIncorrectWord = async (
     word: string,
-    meaning: string,
-    score: number,
-    gameId: string
+    gameId: string,
+    score: number
   ) => {
     try {
-      const docRef = await addDoc(collection(db, "incorrectWords"), {
+      await addDoc(collection(db, "incorrectWords"), {
         word,
-        meaning,
-        score, // スコアも追加して保存
         timestamp: new Date(),
+        score,
         gameId,
       });
-      console.log("Document written with ID: ", gameId);
     } catch (e) {
       console.error("Error adding document: ", e);
     }
   };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setUserInput(value);
 
     if (!mistyped && value !== word.slice(0, value.length)) {
       setMistyped(true);
-      saveIncorrectWord(word, meaning, score, gameId);
+      saveIncorrectWord(word, gameId, score);
     }
+
     if (value === word) {
       setScore((prevScore) => prevScore + 1);
       setRandomWord();
@@ -88,7 +85,6 @@ const TypingGame = () => {
       );
     });
   };
-  const scoreRef = useRef(score);
 
   useEffect(() => {
     setRandomWord();
@@ -100,24 +96,22 @@ const TypingGame = () => {
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(interval); // タイマーを停止
-          setgameOver(true);
-          alert("Finish!");
-          router.push(
-            `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
-          ); // 結果ページに遷移
+          setGameOver(true);
+          return prev;
         }
         return prev - 1;
       });
-    }, 100); // タイマーを1秒に設定
+    }, 1000); // タイマーを1秒に設定
 
-    // useEffectのクリーンアップ関数
     return () => clearInterval(interval);
   }, []);
 
-  // scoreが更新されるたびにscoreRef.currentも更新
+  // タイマーが0になった時にページ遷移
   useEffect(() => {
-    scoreRef.current = score;
-  }, [score]);
+    if (gameOver) {
+      router.push(`/Result?score=${score}&gameId=${gameId}&level=${level}`);
+    }
+  }, [gameOver, router, scoreRef, gameId, level]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -134,9 +128,10 @@ const TypingGame = () => {
         value={userInput}
         onChange={handleInputChange}
         style={{ fontSize: "24px", padding: "10px", width: "300px" }}
-        disabled={timer === 0} // タイマーが0なら入力を無効化
+        disabled={timer === 0}
       />
     </div>
   );
 };
+
 export default TypingGame;
