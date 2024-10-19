@@ -51,6 +51,13 @@ export default function ScorePage() {
     router.push(`/Game?level=${level}`); // ゲームページに遷移
   };
 
+  const handleReplayGame = () => {
+    router.push(`/ReGame?&gameId=${gameId}&level=${level}`);
+  };
+  const handleLevelSelect = () => {
+    router.push(`/LevelSelect`);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500">
       <Card className="w-full max-w-md">
@@ -89,6 +96,21 @@ export default function ScorePage() {
 
           <Button variant="contained" color="primary" onClick={handlePlayAgain}>
             Play Again
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleReplayGame}
+          >
+            Play Regame
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleLevelSelect}
+          >
+            Level
           </Button>
         </CardContent>
       </Card>
