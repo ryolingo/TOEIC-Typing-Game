@@ -5,6 +5,13 @@ import { wordsList } from "../conponents/WordList";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
 import { v4 as uuidv4 } from "uuid";
+import {
+  Card,
+  CardHeader,
+  Typography,
+  CardContent,
+  Input,
+} from "@mui/material";
 
 const TypingGame = () => {
   // ゲームの状態
@@ -38,20 +45,31 @@ const TypingGame = () => {
   };
 
   // 間違えた単語を保存する関数
-  const saveIncorrectWord = async (
-    word: string,
-    gameId: string,
-    score: number
-  ) => {
+  const saveIncorrectWord = async (word: string) => {
     try {
       await addDoc(collection(db, "incorrectWords"), {
         word,
+        meaning,
+        gameId, // gameIdを保存
+        level, // levelも保存
         timestamp: new Date(),
-        score,
-        gameId,
       });
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.error("Error adding incorrect word: ", e);
+    }
+  };
+
+  // ゲームのメタデータを保存する関数
+  const saveGameData = async () => {
+    try {
+      await addDoc(collection(db, "GameData"), {
+        gameId,
+        level,
+        score, // スコアはuseRefで管理しているスコアを保存
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      console.error("Error adding game data: ", e);
     }
   };
 
@@ -61,7 +79,7 @@ const TypingGame = () => {
 
     if (!mistyped && value !== word.slice(0, value.length)) {
       setMistyped(true);
-      saveIncorrectWord(word, gameId, score);
+      saveIncorrectWord(word);
     }
 
     if (value === word) {
@@ -101,7 +119,7 @@ const TypingGame = () => {
         }
         return prev - 1;
       });
-    }, 1000); // タイマーを1秒に設定
+    }, 100); // タイマーを1秒に設定
 
     return () => clearInterval(interval);
   }, []);
@@ -109,27 +127,39 @@ const TypingGame = () => {
   // タイマーが0になった時にページ遷移
   useEffect(() => {
     if (gameOver) {
+      saveGameData(); // ゲームデータを保存
       router.push(`/Result?score=${score}&gameId=${gameId}&level=${level}`);
     }
   }, [gameOver, router, scoreRef, gameId, level]);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Typing Game</h1>
-      <h2>Time: {timer} seconds</h2>
-      <h2>Score: {score}</h2>
-      <h2>
-        <p>{meaning}</p>
-        <div>{renderWord()}</div>
-      </h2>
-      <input
-        ref={inputRef}
-        type="text"
-        value={userInput}
-        onChange={handleInputChange}
-        style={{ fontSize: "24px", padding: "10px", width: "300px" }}
-        disabled={timer === 0}
-      />
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <Typography variant="h4" className="text-center">
+            Typing Game
+          </Typography>
+        </CardHeader>
+        <CardContent>
+          <Typography variant="h6" className="text-center mb-4">
+            Time: {timer} seconds
+          </Typography>
+          <Typography variant="h6" className="text-center mb-4">
+            Score: {score}
+          </Typography>
+          <Typography variant="body1" className="text-center mb-4">
+            {meaning}
+          </Typography>
+          <div className="text-center mb-4">{renderWord()}</div>
+          <Input
+            ref={inputRef}
+            value={userInput}
+            onChange={handleInputChange}
+            className="w-full p-2 text-lg"
+            disabled={timer === 0}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
