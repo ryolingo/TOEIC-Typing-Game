@@ -57,7 +57,9 @@ export default function ScorePage() {
   const handleLevelSelect = () => {
     router.push(`/LevelSelect`);
   };
-
+  const handleMypage = () => {
+    router.push(`/Mypage`);
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500">
       <Card className="w-full max-w-md">
@@ -111,6 +113,9 @@ export default function ScorePage() {
             onClick={handleLevelSelect}
           >
             Level
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleMypage}>
+            Mypage
           </Button>
         </CardContent>
       </Card>
