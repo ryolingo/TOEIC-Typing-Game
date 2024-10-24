@@ -1,0 +1,12 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "GameData",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
