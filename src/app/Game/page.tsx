@@ -3,7 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/firebase/firebase";
+import { auth, db } from "@/firebase/firebase";
 import { v4 as uuidv4 } from "uuid";
 import {
   Card,
@@ -15,6 +15,7 @@ import {
 
 const TypingGame = () => {
   // ゲームの状態
+  const [userId, setUserId] = useState<string | null>(null);
   const [gameId] = useState(uuidv4());
   const [word, setWord] = useState("");
   const searchParams = useSearchParams();
@@ -28,6 +29,19 @@ const TypingGame = () => {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const scoreRef = useRef(score);
+  const currentUserr = auth.currentUser;
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        router.push("/login"); // 未ログインの場合、ログインページにリダイレクト
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const getLevelWords = () => {
     return wordsList[level as keyof typeof wordsList] || wordsList.easy;
@@ -48,6 +62,7 @@ const TypingGame = () => {
   const saveIncorrectWord = async (word: string) => {
     try {
       await addDoc(collection(db, "incorrectWords"), {
+        userId,
         word,
         meaning,
         gameId, // gameIdを保存
@@ -63,6 +78,7 @@ const TypingGame = () => {
   const saveGameData = async () => {
     try {
       await addDoc(collection(db, "GameData"), {
+        userId,
         gameId,
         level,
         score, // スコアはuseRefで管理しているスコアを保存
