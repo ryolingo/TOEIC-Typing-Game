@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
 
 export const useFetchGameData = (gameId: string) => {
@@ -16,31 +16,30 @@ export const useFetchGameData = (gameId: string) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // 間違えた単語を取得
-        const incorrectWordsQuery = query(
-          collection(db, "incorrectWords"),
-          where("gameId", "==", gameId)
-        );
-        const incorrectWordsSnapshot = await getDocs(incorrectWordsQuery);
-        const incorrectWordsData = incorrectWordsSnapshot.docs.map((doc) => ({
-          word: doc.data().word,
-          meaning: doc.data().meaning,
-        }));
+        // GameData ドキュメントを取得
+        const gameDocRef = doc(db, "GameData", gameId); // gameId で GameData を取得
+        const gameDocSnap = await getDoc(gameDocRef);
 
-        setIncorrectWords(incorrectWordsData);
+        if (gameDocSnap.exists()) {
+          const gameDataItem = gameDocSnap.data();
+          setGameData({
+            score: gameDataItem?.score,
+            level: gameDataItem?.level,
+            timestamp: gameDataItem?.timestamp,
+          });
 
-        // ゲームデータを取得
-        const gameDataQuery = query(
-          collection(db, "GameData"),
-          where("gameId", "==", gameId)
-        );
-        const gameDataSnapshot = await getDocs(gameDataQuery);
-        const gameDataItem = gameDataSnapshot.docs[0]?.data(); // 一つのデータのみを想定
-        setGameData({
-          score: gameDataItem?.score,
-          level: gameDataItem?.level,
-          timestamp: gameDataItem?.timestamp,
-        });
+          // IncorrectWords サブコレクションを取得
+          const incorrectWordsRef = collection(gameDocRef, "IncorrectWords");
+          const incorrectWordsSnapshot = await getDocs(incorrectWordsRef);
+          const incorrectWordsData = incorrectWordsSnapshot.docs.map((doc) => ({
+            word: doc.data().word,
+            meaning: doc.data().meaning,
+          }));
+
+          setIncorrectWords(incorrectWordsData);
+        } else {
+          console.error("No such game document!");
+        }
 
         setLoading(false);
       } catch (error) {
