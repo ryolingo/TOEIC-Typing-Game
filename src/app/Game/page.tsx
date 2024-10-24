@@ -3,27 +3,45 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
 import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/firebase/firebase";
+import { auth, db } from "@/firebase/firebase";
 import { v4 as uuidv4 } from "uuid";
+import {
+  Card,
+  CardHeader,
+  Typography,
+  CardContent,
+  Input,
+} from "@mui/material";
 
 const TypingGame = () => {
   // ゲームの状態
+  const [userId, setUserId] = useState<string | null>(null);
   const [gameId] = useState(uuidv4());
   const [word, setWord] = useState("");
   const searchParams = useSearchParams();
   const [meaning, setMeaning] = useState("");
-  const [userInput, setUserInput] = useState(""); // 修正：useInput -> userInput
+  const [userInput, setUserInput] = useState(""); // ユーザーの入力
   const [score, setScore] = useState(0); // スコア管理
   const [timer, setTimer] = useState(60); // タイマーを60秒に設定
   const level = searchParams.get("level") || "easy";
   const [mistyped, setMistyped] = useState(false);
-  const [gameOver, setgameOver] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
   const router = useRouter();
-  // フォーカス管理用のref
   const inputRef = useRef<HTMLInputElement>(null);
-  const [incorrectWords, setIncorrectWords] = useState<
-    { word: string; meaning: string }[]
-  >([]);
+  const scoreRef = useRef(score);
+  const currentUserr = auth.currentUser;
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        router.push("/login"); // 未ログインの場合、ログインページにリダイレクト
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   const getLevelWords = () => {
     return wordsList[level as keyof typeof wordsList] || wordsList.easy;
@@ -37,36 +55,49 @@ const TypingGame = () => {
     setWord(randomWord.word);
     setMeaning(randomWord.meaning);
     setUserInput(""); // 新しい単語が出たら入力をクリア
+    setMistyped(false); // ミスタイプフラグをリセット
   };
 
-  //間違えた単語の関数
-  const saveIncorrectWord = async (
-    word: string,
-    meaning: string,
-    score: number,
-    gameId: string
-  ) => {
+  // 間違えた単語を保存する関数
+  const saveIncorrectWord = async (word: string) => {
     try {
-      const docRef = await addDoc(collection(db, "incorrectWords"), {
+      await addDoc(collection(db, "incorrectWords"), {
+        userId,
         word,
         meaning,
-        score, // スコアも追加して保存
+        gameId, // gameIdを保存
+        level, // levelも保存
         timestamp: new Date(),
-        gameId,
       });
-      console.log("Document written with ID: ", gameId);
     } catch (e) {
-      console.error("Error adding document: ", e);
+      console.error("Error adding incorrect word: ", e);
     }
   };
+
+  // ゲームのメタデータを保存する関数
+  const saveGameData = async () => {
+    try {
+      await addDoc(collection(db, "GameData"), {
+        userId,
+        gameId,
+        level,
+        score, // スコアはuseRefで管理しているスコアを保存
+        timestamp: new Date(),
+      });
+    } catch (e) {
+      console.error("Error adding game data: ", e);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setUserInput(value);
 
     if (!mistyped && value !== word.slice(0, value.length)) {
       setMistyped(true);
-      saveIncorrectWord(word, meaning, score, gameId);
+      saveIncorrectWord(word);
     }
+
     if (value === word) {
       setScore((prevScore) => prevScore + 1);
       setRandomWord();
@@ -88,7 +119,6 @@ const TypingGame = () => {
       );
     });
   };
-  const scoreRef = useRef(score);
 
   useEffect(() => {
     setRandomWord();
@@ -100,43 +130,54 @@ const TypingGame = () => {
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(interval); // タイマーを停止
-          setgameOver(true);
-          alert("Finish!");
-          router.push(
-            `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
-          ); // 結果ページに遷移
+          setGameOver(true);
+          return prev;
         }
         return prev - 1;
       });
     }, 100); // タイマーを1秒に設定
 
-    // useEffectのクリーンアップ関数
     return () => clearInterval(interval);
   }, []);
 
-  // scoreが更新されるたびにscoreRef.currentも更新
+  // タイマーが0になった時にページ遷移
   useEffect(() => {
-    scoreRef.current = score;
-  }, [score]);
+    if (gameOver) {
+      saveGameData(); // ゲームデータを保存
+      router.push(`/Result?score=${score}&gameId=${gameId}&level=${level}`);
+    }
+  }, [gameOver, router, scoreRef, gameId, level]);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Typing Game</h1>
-      <h2>Time: {timer} seconds</h2>
-      <h2>Score: {score}</h2>
-      <h2>
-        <p>{meaning}</p>
-        <div>{renderWord()}</div>
-      </h2>
-      <input
-        ref={inputRef}
-        type="text"
-        value={userInput}
-        onChange={handleInputChange}
-        style={{ fontSize: "24px", padding: "10px", width: "300px" }}
-        disabled={timer === 0} // タイマーが0なら入力を無効化
-      />
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <Typography variant="h4" className="text-center">
+            Typing Game
+          </Typography>
+        </CardHeader>
+        <CardContent>
+          <Typography variant="h6" className="text-center mb-4">
+            Time: {timer} seconds
+          </Typography>
+          <Typography variant="h6" className="text-center mb-4">
+            Score: {score}
+          </Typography>
+          <Typography variant="body1" className="text-center mb-4">
+            {meaning}
+          </Typography>
+          <div className="text-center mb-4">{renderWord()}</div>
+          <Input
+            ref={inputRef}
+            value={userInput}
+            onChange={handleInputChange}
+            className="w-full p-2 text-lg"
+            disabled={timer === 0}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };
+
 export default TypingGame;

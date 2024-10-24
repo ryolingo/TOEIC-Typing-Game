@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Card,
@@ -8,48 +8,39 @@ import {
   Typography,
   Button,
 } from "@mui/material";
-import { db } from "@/firebase/firebase";
-import { getDocs, collection, query, where } from "firebase/firestore";
+import { useFetchGameData } from "../hooks/useFetchGameData"; // フックをインポート
 
 export default function ScorePage() {
   const searchParams = useSearchParams();
-  const score = searchParams.get("score") || "0"; // スコアを取得
-  const gameId = searchParams.get("gameId"); // gameIdをクエリパラメータから取得
-  const level = searchParams.get("level");
+  const gameId = searchParams.get("gameId") || ""; // gameIdをクエリパラメータから取得
   const router = useRouter();
 
-  const [incorrectWords, setIncorrectWords] = useState<
-    { word: string; meaning: string }[]
-  >([]);
+  // カスタムフックを使って間違えた単語を取得
+  const { incorrectWords, gameData, loading } = useFetchGameData(gameId);
 
-  // Firestoreから間違えた単語を取得
-  useEffect(() => {
-    const fetchIncorrectWords = async () => {
-      if (gameId) {
-        // gameIdが存在する場合のみクエリを実行
-        try {
-          const q = query(
-            collection(db, "incorrectWords"),
-            where("gameId", "==", gameId)
-          );
-          const querySnapshot = await getDocs(q);
-          const words = querySnapshot.docs.map((doc) => ({
-            word: doc.data().word,
-            meaning: doc.data().meaning,
-          }));
-          setIncorrectWords(words);
-        } catch (error) {
-          console.error("Error fetching incorrect words: ", error);
-        }
-      }
-    };
-
-    fetchIncorrectWords();
-  }, [gameId]);
+  // ゲームデータが存在すればそれを優先、なければクエリパラメータから取得
+  const score = gameData?.score || searchParams.get("score") || "0";
+  const level = gameData?.level || searchParams.get("level");
 
   const handlePlayAgain = () => {
     router.push(`/Game?level=${level}`); // ゲームページに遷移
   };
+
+  const handleReplayGame = () => {
+    router.push(`/ReGame?gameId=${gameId}&level=${level}`);
+  };
+
+  const handleLevelSelect = () => {
+    router.push(`/LevelSelect`);
+  };
+
+  const handleMypage = () => {
+    router.push(`/Mypage?gameId=${gameId}`);
+  };
+
+  if (loading) {
+    return <p>Loading...</p>; // ローディング中の表示
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500">
@@ -89,6 +80,24 @@ export default function ScorePage() {
 
           <Button variant="contained" color="primary" onClick={handlePlayAgain}>
             Play Again
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleReplayGame}
+          >
+            Play Regame
+          </Button>
+
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleLevelSelect}
+          >
+            Level
+          </Button>
+          <Button variant="contained" color="primary" onClick={handleMypage}>
+            Mypage
           </Button>
         </CardContent>
       </Card>
