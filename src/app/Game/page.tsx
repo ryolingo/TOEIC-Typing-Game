@@ -2,91 +2,88 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { wordsList } from "../conponents/WordList";
-import { addDoc, collection } from "firebase/firestore";
-import { auth, db } from "@/firebase/firebase";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore"; // 修正: setDocをインポート
+import { db, auth } from "@/firebase/firebase"; // authを追加してFirebase Authenticationをインポート
 import { v4 as uuidv4 } from "uuid";
-import {
-  Card,
-  CardHeader,
-  Typography,
-  CardContent,
-  Input,
-} from "@mui/material";
+import { onAuthStateChanged } from "firebase/auth";
 
 const TypingGame = () => {
-  // ゲームの状態
-  const [userId, setUserId] = useState<string | null>(null);
   const [gameId] = useState(uuidv4());
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [word, setWord] = useState("");
   const searchParams = useSearchParams();
   const [meaning, setMeaning] = useState("");
-  const [userInput, setUserInput] = useState(""); // ユーザーの入力
-  const [score, setScore] = useState(0); // スコア管理
-  const [timer, setTimer] = useState(60); // タイマーを60秒に設定
-  const level = searchParams.get("level") || "easy";
+  const [userInput, setUserInput] = useState("");
+  const [score, setScore] = useState(0);
+  const [timer, setTimer] = useState(60);
   const [mistyped, setMistyped] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
+  const [gameOver, setgameOver] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const scoreRef = useRef(score);
-  const currentUserr = auth.currentUser;
+  const level = searchParams.get("level") || "easy";
 
+  // Firebase Authenticationでログイン状態を監視してuserIdを設定
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserId(user.uid);
+        setUserId(user.uid); // ログインしている場合にuserIdを設定
       } else {
-        router.push("/login"); // 未ログインの場合、ログインページにリダイレクト
+        router.push("/login"); // 未ログイン時はログインページにリダイレクト
       }
+      setLoading(false); // ローディングを終了
     });
-
     return () => unsubscribe();
   }, [router]);
 
-  const getLevelWords = () => {
-    return wordsList[level as keyof typeof wordsList] || wordsList.easy;
+  const saveGameData = async (finalScore: number) => {
+    if (!userId) return;
+    try {
+      const gameRef = doc(db, "GameData", gameId);
+      await setDoc(gameRef, {
+        userId,
+        gameId,
+        score: finalScore,
+        level,
+        timestamp: new Date(),
+      });
+      console.log("Game metadata saved successfully with gameId: ", gameId);
+      console.log(userId);
+    } catch (e) {
+      console.error("Error adding game data: ", e);
+      console.log(userId);
+    }
+  };
+  const saveIncorrectWord = async (
+    word: string,
+    meaning: string,
+    score: number
+  ) => {
+    if (!userId) return;
+    try {
+      const gameRef = doc(db, "GameData", gameId);
+      const incorrectWordsRef = collection(gameRef, "incorrectWords");
+      await addDoc(incorrectWordsRef, {
+        word,
+        meaning,
+        score,
+        timestamp: new Date(),
+        userId,
+      });
+      console.log("Incorrect word saved successfully for gameId: ", gameId);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
   };
 
-  // ランダムな単語を設定する関数
   const setRandomWord = () => {
-    const levelWords = getLevelWords();
+    const levelWords =
+      wordsList[level as keyof typeof wordsList] || wordsList.easy;
     const randomIndex = Math.floor(Math.random() * levelWords.length);
     const randomWord = levelWords[randomIndex];
     setWord(randomWord.word);
     setMeaning(randomWord.meaning);
-    setUserInput(""); // 新しい単語が出たら入力をクリア
-    setMistyped(false); // ミスタイプフラグをリセット
-  };
-
-  // 間違えた単語を保存する関数
-  const saveIncorrectWord = async (word: string) => {
-    try {
-      await addDoc(collection(db, "incorrectWords"), {
-        userId,
-        word,
-        meaning,
-        gameId, // gameIdを保存
-        level, // levelも保存
-        timestamp: new Date(),
-      });
-    } catch (e) {
-      console.error("Error adding incorrect word: ", e);
-    }
-  };
-
-  // ゲームのメタデータを保存する関数
-  const saveGameData = async () => {
-    try {
-      await addDoc(collection(db, "GameData"), {
-        userId,
-        gameId,
-        level,
-        score, // スコアはuseRefで管理しているスコアを保存
-        timestamp: new Date(),
-      });
-    } catch (e) {
-      console.error("Error adding game data: ", e);
-    }
+    setUserInput("");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +92,9 @@ const TypingGame = () => {
 
     if (!mistyped && value !== word.slice(0, value.length)) {
       setMistyped(true);
-      saveIncorrectWord(word);
+      saveIncorrectWord(word, meaning, score); // 間違えた単語を保存
+      console.log("Incorrect word saved: ", word);
+      setMistyped(false); // 新しい単語を設定するたびにmistypedフラグをリセット
     }
 
     if (value === word) {
@@ -105,77 +104,65 @@ const TypingGame = () => {
     }
   };
 
-  //単語の表示を作成（正解した部分は強調）
-  const renderWord = () => {
-    return word.split("").map((char, index) => {
-      let color = "black"; // デフォルトは黒
-      if (index < userInput.length) {
-        color = char === userInput[index] ? "green" : "red"; // 正解は緑、不正解は赤
-      }
-      return (
-        <span key={index} style={{ color }}>
-          {char}
-        </span>
-      );
-    });
-  };
+  const scoreRef = useRef(score);
 
   useEffect(() => {
     setRandomWord();
+
     if (inputRef.current) {
-      inputRef.current.focus(); // ページが読み込まれたときに自動でフォーカス
+      inputRef.current.focus();
     }
 
     const interval = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
-          clearInterval(interval); // タイマーを停止
-          setGameOver(true);
-          return prev;
+          clearInterval(interval);
+          setgameOver(true);
+          saveGameData(scoreRef.current); // タイマー終了時に最終スコアを保存
+
+          alert("Finish!");
+          router.push(`/Result?score=${scoreRef.current}&gameId=${gameId}`);
         }
         return prev - 1;
       });
-    }, 100); // タイマーを1秒に設定
+    }, 100); // 1秒ごとにタイマーを減少
 
     return () => clearInterval(interval);
-  }, []);
+  }, [userId]);
 
-  // タイマーが0になった時にページ遷移
   useEffect(() => {
-    if (gameOver) {
-      saveGameData(); // ゲームデータを保存
-      router.push(`/Result?score=${score}&gameId=${gameId}&level=${level}`);
-    }
-  }, [gameOver, router, scoreRef, gameId, level]);
+    scoreRef.current = score;
+  }, [score]);
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <Typography variant="h4" className="text-center">
-            Typing Game
-          </Typography>
-        </CardHeader>
-        <CardContent>
-          <Typography variant="h6" className="text-center mb-4">
-            Time: {timer} seconds
-          </Typography>
-          <Typography variant="h6" className="text-center mb-4">
-            Score: {score}
-          </Typography>
-          <Typography variant="body1" className="text-center mb-4">
-            {meaning}
-          </Typography>
-          <div className="text-center mb-4">{renderWord()}</div>
-          <Input
-            ref={inputRef}
-            value={userInput}
-            onChange={handleInputChange}
-            className="w-full p-2 text-lg"
-            disabled={timer === 0}
-          />
-        </CardContent>
-      </Card>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>Typing Game</h1>
+      <h2>Time: {timer} seconds</h2>
+      <h2>Score: {score}</h2>
+      <h2>
+        <p>{meaning}</p>
+        <div>
+          {word.split("").map((char, index) => {
+            let color = "black";
+            if (index < userInput.length) {
+              color = char === userInput[index] ? "green" : "red";
+            }
+            return (
+              <span key={index} style={{ color }}>
+                {char}
+              </span>
+            );
+          })}
+        </div>
+      </h2>
+      <input
+        ref={inputRef}
+        type="text"
+        value={userInput}
+        onChange={handleInputChange}
+        style={{ fontSize: "24px", padding: "10px", width: "300px" }}
+        disabled={timer === 0}
+      />
     </div>
   );
 };
