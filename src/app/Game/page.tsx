@@ -1,13 +1,37 @@
 "use client";
-import { useRouter, useSearchParams } from "next/navigation";
+
 import React, { useState, useEffect, useRef } from "react";
-import { wordsList } from "../conponents/WordList";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore"; // 修正: setDocをインポート
-import { db, auth } from "@/firebase/firebase"; // authを追加してFirebase Authenticationをインポート
+import { useRouter, useSearchParams } from "next/navigation";
+import { addDoc, collection, doc, setDoc } from "firebase/firestore";
+import { db, auth } from "@/firebase/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { onAuthStateChanged } from "firebase/auth";
+import {
+  Box,
+  Typography,
+  TextField,
+  Container,
+  Paper,
+  CircularProgress,
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+} from "@mui/material";
+import { wordsList } from "../conponents/WordList";
 
-const TypingGame = () => {
+const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: {
+      main: "#1976d2",
+    },
+    secondary: {
+      main: "#dc004e",
+    },
+  },
+});
+
+export default function TypingGame() {
   const [gameId] = useState(uuidv4());
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -18,21 +42,20 @@ const TypingGame = () => {
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(60);
   const [mistyped, setMistyped] = useState(false);
-  const [gameOver, setgameOver] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
   const [savedIncorrectWords, setSavedIncorrectWords] = useState(new Set());
+  const [countdown, setCountdown] = useState(3);
+  const [gameStarted, setGameStarted] = useState(false);
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const level = searchParams.get("level") || "easy";
 
-  // Firebase Authenticationでログイン状態を監視してuserIdを設定
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUserId(user.uid); // ログインしている場合にuserIdを設定
-      } else {
-        router.push("/login"); // 未ログイン時はログインページにリダイレクト
+        setUserId(user.uid);
       }
-      setLoading(false); // ローディングを終了
+      setLoading(false);
     });
     return () => unsubscribe();
   }, [router]);
@@ -49,12 +72,11 @@ const TypingGame = () => {
         timestamp: new Date(),
       });
       console.log("Game metadata saved successfully with gameId: ", gameId);
-      console.log(userId);
     } catch (e) {
       console.error("Error adding game data: ", e);
-      console.log(userId);
     }
   };
+
   const saveIncorrectWord = async (
     word: string,
     meaning: string,
@@ -91,91 +113,134 @@ const TypingGame = () => {
     const { value } = e.target;
     setUserInput(value);
 
-    // ミスタイプが初めて検出された場合のみ処理
     if (!mistyped && value !== word.slice(0, value.length)) {
       setMistyped(true);
 
-      // 重複チェック
       if (!savedIncorrectWords.has(word)) {
-        saveIncorrectWord(word, meaning, score); // 間違えた単語を保存
+        saveIncorrectWord(word, meaning, score);
         console.log("Incorrect word saved: ", word);
-        setSavedIncorrectWords((prev) => new Set(prev).add(word)); // Setに追加
+        setSavedIncorrectWords((prev) => new Set(prev).add(word));
       }
     }
 
-    // 正解した場合にmistyped状態をリセットし、次の単語へ
     if (value === word) {
       setScore((prevScore) => prevScore + 1);
       setUserInput("");
       setMistyped(false);
       setRandomWord();
-      setSavedIncorrectWords(new Set()); // 新しい単語ごとにリセット
+      setSavedIncorrectWords(new Set());
     }
   };
 
   const scoreRef = useRef(score);
 
   useEffect(() => {
-    setRandomWord();
-
-    if (inputRef.current) {
-      inputRef.current.focus();
+    if (countdown > 0) {
+      const countdownInterval = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(countdownInterval);
+    } else if (countdown === 0 && !gameStarted) {
+      setGameStarted(true);
+      setRandomWord();
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
+  }, [countdown, gameStarted]);
 
-    const interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setgameOver(true);
-          saveGameData(scoreRef.current); // タイマー終了時に最終スコアを保存
+  useEffect(() => {
+    if (gameStarted) {
+      const interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setGameOver(true);
+            saveGameData(scoreRef.current);
+            router.push(
+              `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
+            );
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-          alert("Finish!");
-          router.push(
-            `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
-          );
-        }
-        return prev - 1;
-      });
-    }, 100); // 1秒ごとにタイマーを減少
-
-    return () => clearInterval(interval);
-  }, [userId]);
+      return () => clearInterval(interval);
+    }
+  }, [gameStarted, gameId, level, router]);
 
   useEffect(() => {
     scoreRef.current = score;
   }, [score]);
 
-  return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Typing Game</h1>
-      <h2>Time: {timer} seconds</h2>
-      <h2>Score: {score}</h2>
-      <h2>
-        <p>{meaning}</p>
-        <div>
-          {word.split("").map((char, index) => {
-            let color = "black";
-            if (index < userInput.length) {
-              color = char === userInput[index] ? "green" : "red";
-            }
-            return (
-              <span key={index} style={{ color }}>
-                {char}
-              </span>
-            );
-          })}
-        </div>
-      </h2>
-      <input
-        ref={inputRef}
-        type="text"
-        value={userInput}
-        onChange={handleInputChange}
-        style={{ fontSize: "24px", padding: "10px", width: "300px" }}
-        disabled={timer === 0}
-      />
-    </div>
-  );
-};
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-export default TypingGame;
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Container maxWidth="sm">
+        <Box sx={{ mt: "10rem" }}>
+          {countdown > 0 ? (
+            <Typography variant="h1" align="center">
+              {countdown}
+            </Typography>
+          ) : (
+            <Paper elevation={3} sx={{ p: 3, mb: 3 }}>
+              <Typography variant="h4" gutterBottom>
+                Time: {timer} seconds
+              </Typography>
+              <Typography variant="h4" gutterBottom>
+                Score: {score}
+              </Typography>
+              <Typography variant="h5" gutterBottom>
+                {meaning}
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                {word.split("").map((char, index) => {
+                  let color = "text.primary";
+                  if (index < userInput.length) {
+                    color =
+                      char === userInput[index] ? "success.main" : "error.main";
+                  }
+                  return (
+                    <Typography
+                      key={index}
+                      variant="h4"
+                      component="span"
+                      sx={{ color }}
+                    >
+                      {char}
+                    </Typography>
+                  );
+                })}
+              </Box>
+              <TextField
+                inputRef={inputRef}
+                fullWidth
+                value={userInput}
+                onChange={handleInputChange}
+                disabled={timer === 0}
+                variant="outlined"
+                inputProps={{
+                  style: { fontSize: "24px", padding: "10px" },
+                }}
+                autoFocus
+              />
+            </Paper>
+          )}
+        </Box>
+      </Container>
+    </ThemeProvider>
+  );
+}

@@ -25,10 +25,10 @@ import { GameData } from "@/app/types";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#455a64", // 落ち着いた青系のグレー
+      main: "#f5f5f5", // 落ち着いた青系のグレー
     },
     secondary: {
-      main: "#ff7043", // 落ち着いたオレンジ
+      main: "#fa8072", // 落ち着いたオレンジ
     },
     background: {
       default: "#fafafa",
@@ -51,8 +51,8 @@ const theme = createTheme({
     MuiCardHeader: {
       styleOverrides: {
         root: {
-          background: "linear-gradient(135deg, #455a64 30%, #ff7043 90%)",
-          color: "#ffffff",
+          background: "linear-gradient(135deg, #fa8072 30%,#f5f5f5  90%)",
+          color: "#00000",
           padding: "16px",
         },
         title: {
