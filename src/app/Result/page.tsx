@@ -1,106 +1,191 @@
 "use client";
+
 import React from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
-  CardHeader,
   Typography,
+  CircularProgress,
+  Box,
+  Grid,
+  Chip,
+  List,
+  ListItem,
+  ListItemText,
+  ThemeProvider,
+  createTheme,
+  Paper,
   Button,
 } from "@mui/material";
-import { useFetchGameData } from "../hooks/useFetchGameData"; // フックをインポート
+import { EmojiEvents, SportsScore, School, Error } from "@mui/icons-material";
+import { useFetchGameData } from "../hooks/useFetchGameData";
 
-export default function ScorePage() {
+const theme = createTheme({
+  palette: {
+    primary: { main: "#2196f3" },
+    secondary: { main: "#f50057" },
+    background: { default: "#f5f5f5" },
+  },
+  typography: {
+    fontFamily: 'Roboto, "Helvetica Neue", Arial, sans-serif',
+    h4: { fontWeight: 700 },
+    h6: { fontWeight: 600 },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: { boxShadow: "0 4px 6px rgba(0,0,0,0.1)", borderRadius: "12px" },
+      },
+    },
+    MuiChip: {
+      styleOverrides: { root: { fontWeight: 600 } },
+    },
+  },
+});
+
+export default function GameResultPage() {
   const searchParams = useSearchParams();
-  const gameId = searchParams.get("gameId") || ""; // gameIdをクエリパラメータから取得
+  const gameId = searchParams.get("gameId") || "";
   const router = useRouter();
 
-  // カスタムフックを使って間違えた単語を取得
   const { incorrectWords, gameData, loading } = useFetchGameData(gameId);
 
-  // ゲームデータが存在すればそれを優先、なければクエリパラメータから取得
-  const score = gameData?.score || searchParams.get("score") || "0";
-  const level = gameData?.level || searchParams.get("level");
-
-  const handlePlayAgain = () => {
-    router.push(`/Game?level=${level}`); // ゲームページに遷移
-  };
-
-  const handleReplayGame = () => {
-    router.push(`/ReGame?gameId=${gameId}&level=${level}`);
-  };
-
-  const handleLevelSelect = () => {
-    router.push(`/LevelSelect`);
-  };
-
-  const handleMypage = () => {
-    router.push(`/Mypage?gameId=${gameId}`);
-  };
-
   if (loading) {
-    return <p>Loading...</p>; // ローディング中の表示
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress size={60} thickness={4} />
+      </Box>
+    );
   }
 
+  const navigateToMypage = () => {
+    router.push("/mypage"); // 必要に応じてユーザーIDを追加
+  };
+
+  const navigateToLevelSelect = () => {
+    router.push("/levelselect");
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500">
-      <Card className="w-full max-w-md">
-        <CardHeader>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ bgcolor: "background.default", minHeight: "100vh", py: 4 }}>
+        <Box
+          className="container"
+          sx={{ maxWidth: "lg", mx: "auto", px: { xs: 2, sm: 3 } }}
+        >
           <Typography
             variant="h4"
-            component="h2"
-            className="text-center font-bold"
+            align="center"
+            gutterBottom
+            sx={{ mb: 4, color: "primary.main" }}
           >
+            <EmojiEvents sx={{ mr: 1, verticalAlign: "bottom" }} />
             Game Result
           </Typography>
-        </CardHeader>
-        <CardContent className="text-center">
-          <Typography variant="h2" component="p" className="mb-4 font-bold">
-            {score}
-          </Typography>
-          <Typography variant="body1" component="p" className="mb-6">
-            Great job! You've completed the typing game.
-          </Typography>
 
-          {/* 間違えた単語のリストを表示 */}
-          {incorrectWords.length > 0 && (
-            <div className="mb-6">
-              <Typography variant="h6" component="p" className="font-bold">
-                Incorrect Words:
-              </Typography>
-              <ul>
-                {incorrectWords.map((item, index) => (
-                  <li key={index}>
-                    {item.word} - {item.meaning}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {gameData && (
+            <Paper elevation={3} sx={{ mb: 4, p: 3, borderRadius: "12px" }}>
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} sm={6}>
+                  <Box display="flex" alignItems="center">
+                    <SportsScore
+                      sx={{ fontSize: 40, color: "primary.main", mr: 2 }}
+                    />
+                    <Typography variant="h5" component="p">
+                      Score: {gameData.score}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Box display="flex" alignItems="center">
+                    <School
+                      sx={{ fontSize: 40, color: "secondary.main", mr: 2 }}
+                    />
+                    <Typography variant="h5" component="p">
+                      Level: {gameData.level}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Paper>
           )}
 
-          <Button variant="contained" color="primary" onClick={handlePlayAgain}>
-            Play Again
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleReplayGame}
-          >
-            Play Regame
-          </Button>
+          {incorrectWords.length > 0 && (
+            <Card>
+              <CardContent>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                >
+                  <Error sx={{ mr: 1, color: "error.main" }} />
+                  Incorrect Words
+                </Typography>
+                <List>
+                  {incorrectWords.map((word, index) => (
+                    <ListItem
+                      key={index}
+                      divider={index !== incorrectWords.length - 1}
+                    >
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body1"
+                            component="span"
+                            fontWeight="medium"
+                          >
+                            {word.word}
+                          </Typography>
+                        }
+                        secondary={
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mt: 0.5 }}
+                          >
+                            {word.meaning}
+                          </Typography>
+                        }
+                      />
+                      <Chip
+                        label={`Word ${index + 1}`}
+                        color="primary"
+                        size="small"
+                        sx={{ ml: 2 }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </CardContent>
+            </Card>
+          )}
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleLevelSelect}
+          <Box
+            sx={{ display: "flex", justifyContent: "center", mt: 4, gap: 2 }}
           >
-            Level
-          </Button>
-          <Button variant="contained" color="primary" onClick={handleMypage}>
-            Mypage
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={navigateToMypage}
+            >
+              Go to MyPage
+            </Button>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={navigateToLevelSelect}
+            >
+              Select Level
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 }
