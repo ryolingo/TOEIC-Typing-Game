@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import {
   AppBar,
@@ -29,23 +28,23 @@ import { onAuthStateChanged } from "firebase/auth";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#333333", // シンプルなダークグレー
+      main: "#333333",
     },
     secondary: {
-      main: "#9e9e9e", // グレーアクセント
+      main: "#9e9e9e",
     },
     background: {
       default: "#f5f5f5",
     },
     text: {
-      primary: "#ffffff", // テキストの色を白に設定
+      primary: "#ffffff",
     },
   },
   typography: {
     fontFamily: 'Roboto, "Helvetica Neue", Arial, sans-serif',
     h6: {
       fontWeight: 700,
-      color: "#ffffff", // Header内のテキストカラー
+      color: "#ffffff",
     },
   },
   components: {
@@ -54,9 +53,9 @@ const theme = createTheme({
         root: {
           textTransform: "none",
           fontWeight: 600,
-          color: "#ffffff", // ボタンの文字色を白
+          color: "#ffffff",
           "&:hover": {
-            backgroundColor: "#555555", // ホバー時に少し濃いグレーに変更
+            backgroundColor: "#555555",
           },
         },
       },
@@ -64,8 +63,8 @@ const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: "none", // シンプルな見た目にするため影を削除
-          backgroundColor: "#333333", // AppBarの背景色
+          boxShadow: "none",
+          backgroundColor: "#333333",
         },
       },
     },
@@ -80,11 +79,7 @@ const Header = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserId(user.uid);
-      } else {
-        setUserId(null);
-      }
+      setUserId(user ? user.uid : null);
     });
     return () => unsubscribe();
   }, []);
@@ -110,14 +105,6 @@ const Header = () => {
     handleClose();
   };
 
-  const handleMypage = () => {
-    if (userId) {
-      handleNavigation(`/mypage/${userId}`);
-    } else {
-      handleNavigation("/login");
-    }
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <AppBar position="fixed">
@@ -128,7 +115,7 @@ const Header = () => {
             sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}
           >
             <SportsEsports sx={{ mr: 1 }} />
-            Typing App
+            TOYPE
           </Typography>
           {isMobile ? (
             <>
@@ -159,9 +146,13 @@ const Header = () => {
                 <MenuItem onClick={() => handleNavigation("/")}>
                   <Home sx={{ mr: 1 }} /> Home
                 </MenuItem>
-                <MenuItem onClick={handleMypage}>
-                  <AccountCircle sx={{ mr: 1 }} /> Mypage
-                </MenuItem>
+                {userId && (
+                  <MenuItem
+                    onClick={() => handleNavigation(`/mypage/${userId}`)}
+                  >
+                    <AccountCircle sx={{ mr: 1 }} /> Mypage
+                  </MenuItem>
+                )}
                 <MenuItem onClick={() => handleNavigation("/levelselect")}>
                   <SportsEsports sx={{ mr: 1 }} /> Game
                 </MenuItem>
@@ -185,13 +176,15 @@ const Header = () => {
               >
                 Home
               </Button>
-              <Button
-                color="inherit"
-                startIcon={<AccountCircle />}
-                onClick={handleMypage}
-              >
-                Mypage
-              </Button>
+              {userId && (
+                <Button
+                  color="inherit"
+                  startIcon={<AccountCircle />}
+                  onClick={() => handleNavigation(`/mypage/${userId}`)}
+                >
+                  Mypage
+                </Button>
+              )}
               <Button
                 color="inherit"
                 startIcon={<SportsEsports />}
