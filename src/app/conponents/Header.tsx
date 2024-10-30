@@ -29,16 +29,23 @@ import { onAuthStateChanged } from "firebase/auth";
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#2196f3",
+      main: "#333333", // シンプルなダークグレー
     },
     secondary: {
-      main: "#f50057",
+      main: "#9e9e9e", // グレーアクセント
+    },
+    background: {
+      default: "#f5f5f5",
+    },
+    text: {
+      primary: "#ffffff", // テキストの色を白に設定
     },
   },
   typography: {
     fontFamily: 'Roboto, "Helvetica Neue", Arial, sans-serif',
     h6: {
       fontWeight: 700,
+      color: "#ffffff", // Header内のテキストカラー
     },
   },
   components: {
@@ -47,13 +54,18 @@ const theme = createTheme({
         root: {
           textTransform: "none",
           fontWeight: 600,
+          color: "#ffffff", // ボタンの文字色を白
+          "&:hover": {
+            backgroundColor: "#555555", // ホバー時に少し濃いグレーに変更
+          },
         },
       },
     },
     MuiAppBar: {
       styleOverrides: {
         root: {
-          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+          boxShadow: "none", // シンプルな見た目にするため影を削除
+          backgroundColor: "#333333", // AppBarの背景色
         },
       },
     },
@@ -108,7 +120,7 @@ const Header = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <AppBar position="static" color="primary">
+      <AppBar position="fixed">
         <Toolbar>
           <Typography
             variant="h6"
