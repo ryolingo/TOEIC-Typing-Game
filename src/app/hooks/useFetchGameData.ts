@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebase/firebase";
 
 export const useFetchGameData = (gameId: string) => {
@@ -16,31 +16,36 @@ export const useFetchGameData = (gameId: string) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // GameData ドキュメントを取得
-        const gameDocRef = doc(db, "GameData", gameId); // gameId で GameData を取得
-        const gameDocSnap = await getDoc(gameDocRef);
+        // gameId に一致する GameData ドキュメントを取得
+        const gameDataQuery = query(
+          collection(db, "GameData"),
+          where("gameId", "==", gameId)
+        );
+        const querySnapshot = await getDocs(gameDataQuery);
 
-        if (gameDocSnap.exists()) {
-          const gameDataItem = gameDocSnap.data();
+        querySnapshot.forEach((doc) => {
+          const gameDataItem = doc.data();
           setGameData({
             score: gameDataItem?.score,
             level: gameDataItem?.level,
             timestamp: gameDataItem?.timestamp,
           });
+        });
 
-          // IncorrectWords サブコレクションを取得
-          const incorrectWordsRef = collection(gameDocRef, "IncorrectWords");
-          const incorrectWordsSnapshot = await getDocs(incorrectWordsRef);
-          const incorrectWordsData = incorrectWordsSnapshot.docs.map((doc) => ({
-            word: doc.data().word,
-            meaning: doc.data().meaning,
-          }));
+        // IncorrectWords サブコレクションを取得
+        const incorrectWordsRef = collection(
+          db,
+          "GameData",
+          gameId,
+          "IncorrectWords"
+        );
+        const incorrectWordsSnapshot = await getDocs(incorrectWordsRef);
+        const incorrectWordsData = incorrectWordsSnapshot.docs.map((doc) => ({
+          word: doc.data().word,
+          meaning: doc.data().meaning,
+        }));
 
-          setIncorrectWords(incorrectWordsData);
-        } else {
-          console.error("No such game document!");
-        }
-
+        setIncorrectWords(incorrectWordsData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching game data: ", error);
