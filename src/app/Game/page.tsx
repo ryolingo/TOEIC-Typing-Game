@@ -121,7 +121,9 @@ const TypingGame = () => {
           saveGameData(scoreRef.current); // タイマー終了時に最終スコアを保存
 
           alert("Finish!");
-          router.push(`/Result?score=${scoreRef.current}&gameId=${gameId}`);
+          router.push(
+            `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
+          );
         }
         return prev - 1;
       });
