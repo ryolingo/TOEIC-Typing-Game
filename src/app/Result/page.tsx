@@ -75,12 +75,7 @@ export default function GameResultPage() {
           className="container"
           sx={{ maxWidth: "lg", mx: "auto", px: { xs: 2, sm: 3 } }}
         >
-          <Typography
-            variant="h4"
-            align="center"
-            gutterBottom
-            sx={{ mb: 4, color: "primary.main" }}
-          >
+          <Typography variant="h4" align="center" gutterBottom sx={{ mb: 4 }}>
             <EmojiEvents sx={{ mr: 1, verticalAlign: "bottom" }} />
             Game Result
           </Typography>

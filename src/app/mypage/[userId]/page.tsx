@@ -21,17 +21,17 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useFetchUserData } from "@/app/hooks/useFetchUserData";
 import { GameData } from "@/app/types";
 
-// カスタムテーマの作成
+/// カスタムテーマの作成
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#3f51b5",
+      main: "#455a64", // 落ち着いた青系のグレー
     },
     secondary: {
-      main: "#f50057",
+      main: "#ff7043", // 落ち着いたオレンジ
     },
     background: {
-      default: "#f5f5f5",
+      default: "#fafafa",
     },
   },
   typography: {
@@ -41,9 +41,9 @@ const theme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          transition: "box-shadow 0.3s ease-in-out",
+          transition: "box-shadow 0.2s ease-in-out",
           "&:hover": {
-            boxShadow: "0 8px 16px 0 rgba(0,0,0,0.2)",
+            boxShadow: "0 6px 12px 0 rgba(0,0,0,0.15)",
           },
         },
       },
@@ -51,8 +51,12 @@ const theme = createTheme({
     MuiCardHeader: {
       styleOverrides: {
         root: {
-          background: "linear-gradient(45deg, #3f51b5 30%, #f50057 90%)",
-          color: "white",
+          background: "linear-gradient(135deg, #455a64 30%, #ff7043 90%)",
+          color: "#ffffff",
+          padding: "16px",
+        },
+        title: {
+          fontWeight: 600,
         },
       },
     },
@@ -75,9 +79,9 @@ export default function Mypage() {
             variant="h3"
             align="center"
             gutterBottom
-            sx={{ fontWeight: "bold", color: "text.primary", mb: 4 }}
+            sx={{ fontWeight: "bold", color: "black", mb: 4 }}
           >
-            ユーザーマイページ
+            Your History
           </Typography>
 
           {loading ? (
