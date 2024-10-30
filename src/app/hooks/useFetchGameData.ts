@@ -6,6 +6,7 @@ export const useFetchGameData = (gameId: string) => {
   const [incorrectWords, setIncorrectWords] = useState<
     { word: string; meaning: string }[]
   >([]);
+
   const [gameData, setGameData] = useState<{
     score: number;
     level: string;
@@ -37,13 +38,15 @@ export const useFetchGameData = (gameId: string) => {
           db,
           "GameData",
           gameId,
-          "IncorrectWords"
+          "incorrectWords"
         );
+        console.log(incorrectWordsRef);
         const incorrectWordsSnapshot = await getDocs(incorrectWordsRef);
         const incorrectWordsData = incorrectWordsSnapshot.docs.map((doc) => ({
           word: doc.data().word,
           meaning: doc.data().meaning,
         }));
+        console.log(incorrectWordsData);
 
         setIncorrectWords(incorrectWordsData);
         setLoading(false);
