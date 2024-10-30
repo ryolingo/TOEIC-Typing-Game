@@ -19,6 +19,7 @@ const TypingGame = () => {
   const [timer, setTimer] = useState(60);
   const [mistyped, setMistyped] = useState(false);
   const [gameOver, setgameOver] = useState(false);
+  const [savedIncorrectWords, setSavedIncorrectWords] = useState(new Set());
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const level = searchParams.get("level") || "easy";
@@ -90,17 +91,25 @@ const TypingGame = () => {
     const { value } = e.target;
     setUserInput(value);
 
+    // ミスタイプが初めて検出された場合のみ処理
     if (!mistyped && value !== word.slice(0, value.length)) {
       setMistyped(true);
-      saveIncorrectWord(word, meaning, score); // 間違えた単語を保存
-      console.log("Incorrect word saved: ", word);
-      setMistyped(false); // 新しい単語を設定するたびにmistypedフラグをリセット
+
+      // 重複チェック
+      if (!savedIncorrectWords.has(word)) {
+        saveIncorrectWord(word, meaning, score); // 間違えた単語を保存
+        console.log("Incorrect word saved: ", word);
+        setSavedIncorrectWords((prev) => new Set(prev).add(word)); // Setに追加
+      }
     }
 
+    // 正解した場合にmistyped状態をリセットし、次の単語へ
     if (value === word) {
       setScore((prevScore) => prevScore + 1);
-      setRandomWord();
       setUserInput("");
+      setMistyped(false);
+      setRandomWord();
+      setSavedIncorrectWords(new Set()); // 新しい単語ごとにリセット
     }
   };
 
