@@ -64,10 +64,6 @@ export default function GameResultPage() {
     );
   }
 
-  const navigateToMypage = () => {
-    router.push("/mypage"); // 必要に応じてユーザーIDを追加
-  };
-
   const navigateToLevelSelect = () => {
     router.push("/levelselect");
   };
@@ -169,13 +165,6 @@ export default function GameResultPage() {
           <Box
             sx={{ display: "flex", justifyContent: "center", mt: 4, gap: 2 }}
           >
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={navigateToMypage}
-            >
-              Go to MyPage
-            </Button>
             <Button
               variant="outlined"
               color="secondary"
