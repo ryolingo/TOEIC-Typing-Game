@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "./conponents/Header";
+import Header from "./components/Header";
 import { Suspense } from "react";
 
 const geistSans = localFont({

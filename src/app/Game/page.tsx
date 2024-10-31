@@ -17,7 +17,7 @@ import {
   createTheme,
   CssBaseline,
 } from "@mui/material";
-import { wordsList } from "../conponents/WordList";
+import { wordsList } from "../components/WordList";
 
 const theme = createTheme({
   palette: {
