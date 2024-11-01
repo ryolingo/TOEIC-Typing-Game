@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Minimalist TOYPE Typing Game Icon">
+  <defs>
+    <linearGradient id="bg-gradient" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E0E0"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="512" height="512" rx="128" fill="url(#bg-gradient)"/>
+  
+  <path d="M128 320h256v128h-256v-128z" fill="#FFFFFF" stroke="#000000" stroke-width="8"/>
+  <rect x="144" y="336" width="32" height="32" rx="8" fill="#000000" opacity="0.8"/>
+  <rect x="188" y="336" width="32" height="32" rx="8" fill="#000000" opacity="0.8"/>
+  <rect x="232" y="336" width="32" height="32" rx="8" fill="#000000" opacity="0.8"/>
+  <rect x="276" y="336" width="32" height="32" rx="8" fill="#000000" opacity="0.8"/>
+  <rect x="320" y="336" width="48" height="32" rx="8" fill="#000000" opacity="0.8"/>
+  <rect x="144" y="380" width="224" height="32" rx="8" fill="#000000" opacity="0.8"/>
+  
+  <text x="256" y="240" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="#000000" text-anchor="middle" dominant-baseline="middle">TOYPE</text>
+  
+  <path d="M256 64l40 40-40 40-40-40z" fill="#000000" opacity="0.9"/>
+</svg>
