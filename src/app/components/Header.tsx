@@ -153,7 +153,7 @@ const Header = () => {
                     <AccountCircle sx={{ mr: 1 }} /> Mypage
                   </MenuItem>
                 )}
-                <MenuItem onClick={() => handleNavigation("/levelselect")}>
+                <MenuItem onClick={() => handleNavigation("/level")}>
                   <SportsEsports sx={{ mr: 1 }} /> Game
                 </MenuItem>
                 {userId ? (
