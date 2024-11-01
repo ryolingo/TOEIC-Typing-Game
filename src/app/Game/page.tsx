@@ -158,7 +158,7 @@ export default function TypingGame() {
             setGameOver(true);
             saveGameData(scoreRef.current);
             router.push(
-              `/Result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
+              `/result?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
             );
           }
           return prev - 1;
