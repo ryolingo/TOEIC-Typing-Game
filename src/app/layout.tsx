@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Header />
-        <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+        {children}
       </body>
     </html>
   );
