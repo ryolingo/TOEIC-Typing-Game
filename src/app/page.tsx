@@ -27,7 +27,7 @@ export default function Home() {
   });
 
   const handlePlayGame = () => {
-    router.push("/levelselect");
+    router.push("/level");
   };
 
   const theme = createTheme({
