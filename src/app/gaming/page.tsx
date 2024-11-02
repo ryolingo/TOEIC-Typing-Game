@@ -49,6 +49,7 @@ export default function TypingGame() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const level = searchParams.get("level") || "easy";
+  const typingSoundRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -109,29 +110,44 @@ export default function TypingGame() {
     setUserInput("");
   };
 
+  // 音声ファイルをuseRefで管理
+
+  useEffect(() => {
+    typingSoundRef.current = new Audio("/sounds/typing-sound.mp3");
+  }, []);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
-    setUserInput(value);
 
-    if (!mistyped && value !== word.slice(0, value.length)) {
-      setMistyped(true);
+    // 正しい部分一致の場合のみ入力を反映
+    if (value === word.slice(0, value.length)) {
+      setUserInput(value); // 正しい入力のみ更新
+      setMistyped(false); // ミス状態を解除
 
-      if (!savedIncorrectWords.has(word)) {
-        saveIncorrectWord(word, meaning, score);
-        console.log("Incorrect word saved: ", word);
-        setSavedIncorrectWords((prev) => new Set(prev).add(word));
+      if (typingSoundRef.current) {
+        typingSoundRef.current.currentTime = 0; // サウンドの再生位置をリセット
+        typingSoundRef.current.play(); // タイピング音を再生
+      }
+
+      if (value === word) {
+        setScore((prev) => prev + 1);
+        setUserInput("");
+        setMistyped(false);
+        setRandomWord();
+        setSavedIncorrectWords(new Set());
+      }
+    } else {
+      // ミスタイプ時の処理
+      if (!mistyped) {
+        setMistyped(true);
+
+        // ミスタイプを保存し、重複を防ぐためセットへ追加
+        if (!savedIncorrectWords.has(word)) {
+          saveIncorrectWord(word, meaning, score);
+          setSavedIncorrectWords((prev) => new Set(prev.add(word)));
+        }
       }
     }
-
-    if (value === word) {
-      setScore((prevScore) => prevScore + 1);
-      setUserInput("");
-      setMistyped(false);
-      setRandomWord();
-      setSavedIncorrectWords(new Set());
-    }
   };
-
   const scoreRef = useRef(score);
 
   useEffect(() => {
