@@ -111,7 +111,6 @@ export default function TypingGame() {
   };
 
   // 音声ファイルをuseRefで管理
-
   useEffect(() => {
     typingSoundRef.current = new Audio("/sounds/typing-sound.mp3");
   }, []);
