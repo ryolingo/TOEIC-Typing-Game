@@ -1,38 +1,46 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+## TOYPE（トーイップ
 
-First, run the development server:
+プロダクト概要
+TOYPE は、TOEIC の英単語をタイピングゲームをしながら学ぶことができる個人開発のアプリです。英語のスキルを楽しく、そして効果的に向上させることを目的としています。ユーザーがログインすることで、MyPage 機能を通じてこれまでに間違えた単語を振り返ることができます。この機能により、ユーザーは自分の苦手な単語を確認し、継続的に学習を進めることが可能です。
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## デモ
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[デプロイ済みアプリケーションはこちらからアクセスできます](toeic-typing-game.vercel.app/)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 使用技術
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Next.js**: React ベースのフレームワーク
+- **Firebase**: 認証と Firestore データベースとして使用
+- **Google Gemini**: AI を使った服装提案
+- **Google Search API**: 提案服装の関連画像を表示
 
-## Learn More
+## 展望　
 
-To learn more about Next.js, take a look at the following resources:
+- ユーザーが苦手な単語を打ち込んでその単語をタイピングゲームの問題としてプレイできる機能を追加。
+- UX の向上
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 使用技術
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **TypeScript**: 型安全を確保し、効率的かつ堅牢な開発を実現するため
+- **Next.js**: React ベースのフレームワーク
+- **Firebase**: 認証と Firestore データベースとして使用
 
-## Deploy on Vercel
+## アピールポイント
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- 楽しく学べる学習体験
+  タイピングゲームを通じて、TOEIC の英単語を楽しみながら効率的に学ぶことができます。単調になりがちな語彙の学習を、ゲーム性を持たせることで長続きしやすい体験に仕上げています。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# TOEIC-Typing-Game
-# Blogsite
+- MyPage 機能による学習管理
+  ログイン後、ユーザーは自分の学習履歴や間違えた単語を MyPage で確認できます。これにより、復習を効果的に行うことができ、学習の定着率を向上させることを目指しています。
+
+- 充実した学習サポート
+  単語を間違えた際にはその意味も表示されることで、学習の質を高めます。これにより、ユーザーが単語を正確に覚えるきっかけを提供します。
+
+  ## 大変だったこと
+
+- **間違えた単語の判定機能**
+  ユーザーがタイプミスした単語を的確に判定し、MyPage で正確に振り返られるようにする機能の実装は、データの管理やパフォーマンス最適化に工夫が必要でした。特に、重複した単語の扱いや結果の表示に関して細かな調整を行いました。
+- **Firebase を用いたログイン機能とユーザー判定**
+  初めて Firebase を使用したのでキャッチアップに多くの時間を要しました。また、ユーザーごとに DB からデータを取得することも非常に難しかったです。
