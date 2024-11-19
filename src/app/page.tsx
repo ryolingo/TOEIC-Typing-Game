@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { EmojiEvents, School, TrendingUp } from "@mui/icons-material";
-import { wittyRemarks } from "./components/Wittyremarks";
+import { wittyRemarks } from "./components/common/Wittyremarks";
 
 export default function Home() {
   const router = useRouter();
