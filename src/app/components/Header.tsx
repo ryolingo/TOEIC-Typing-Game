@@ -188,7 +188,7 @@ const Header = () => {
               <Button
                 color="inherit"
                 startIcon={<SportsEsports />}
-                onClick={() => handleNavigation("/levelselect")}
+                onClick={() => handleNavigation("/level")}
               >
                 Game
               </Button>
