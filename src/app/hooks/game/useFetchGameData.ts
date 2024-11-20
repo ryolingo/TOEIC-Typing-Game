@@ -47,7 +47,6 @@ export const useFetchGameData = (gameId: string) => {
           meaning: doc.data().meaning,
         }));
         console.log(incorrectWordsData);
-
         setIncorrectWords(incorrectWordsData);
         setLoading(false);
       } catch (error) {

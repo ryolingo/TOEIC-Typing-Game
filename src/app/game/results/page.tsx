@@ -19,7 +19,7 @@ import {
   Button,
 } from "@mui/material";
 import { EmojiEvents, SportsScore, School, Error } from "@mui/icons-material";
-import { useFetchGameData } from "../hooks/useFetchGameData";
+import { useFetchGameData } from "../../hooks/game/useFetchGameData";
 
 const theme = createTheme({
   palette: {

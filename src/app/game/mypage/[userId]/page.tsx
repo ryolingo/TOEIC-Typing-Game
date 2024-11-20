@@ -18,8 +18,8 @@ import {
   CssBaseline,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useFetchUserData } from "@/app/hooks/useFetchUserData";
 import { GameData } from "@/app/types";
+import { useFetchUserData } from "@/app/hooks/user/useFetchUserData";
 
 /// カスタムテーマの作成
 const theme = createTheme({
