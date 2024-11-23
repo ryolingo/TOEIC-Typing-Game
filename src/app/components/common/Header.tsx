@@ -148,7 +148,7 @@ const Header = () => {
                 </MenuItem>
                 {userId && (
                   <MenuItem
-                    onClick={() => handleNavigation(`/mypage/${userId}`)}
+                    onClick={() => handleNavigation(`game/mypage/${userId}`)}
                   >
                     <AccountCircle sx={{ mr: 1 }} /> Mypage
                   </MenuItem>
