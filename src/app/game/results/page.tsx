@@ -65,7 +65,7 @@ export default function GameResultPage() {
   }
 
   const navigateToLevelSelect = () => {
-    router.push("/level");
+    router.push("game/level");
   };
 
   return (
