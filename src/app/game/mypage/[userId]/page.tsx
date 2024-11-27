@@ -81,7 +81,7 @@ export default function Mypage() {
             gutterBottom
             sx={{ fontWeight: "bold", color: "black", mb: 4 }}
           >
-            Your History
+            Game History{" "}
           </Typography>
 
           {loading ? (
