@@ -180,7 +180,7 @@ const Header = () => {
                 <Button
                   color="inherit"
                   startIcon={<AccountCircle />}
-                  onClick={() => handleNavigation(`/mypage/${userId}`)}
+                  onClick={() => handleNavigation(`/game/mypage/${userId}`)}
                 >
                   Mypage
                 </Button>
@@ -188,7 +188,7 @@ const Header = () => {
               <Button
                 color="inherit"
                 startIcon={<SportsEsports />}
-                onClick={() => handleNavigation("/level")}
+                onClick={() => handleNavigation("/game/level")}
               >
                 Game
               </Button>
