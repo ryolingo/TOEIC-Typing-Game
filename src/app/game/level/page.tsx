@@ -62,7 +62,7 @@ export default function LevelSelect() {
   const router = useRouter();
 
   const handleLevelSelect = (level: string) => {
-    router.push(`game/gaming?level=${level}`);
+    router.push(`/gaming?level=${level}`);
   };
 
   const levels = [
