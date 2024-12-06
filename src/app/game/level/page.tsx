@@ -3,19 +3,15 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Button,
-  Card,
-  CardContent,
-  Typography,
   Box,
   ThemeProvider,
   createTheme,
   responsiveFontSizes,
   Grid,
-  Grow,
-  Zoom,
 } from "@mui/material";
-import { styled } from "@mui/system";
+import { levels } from "@/app/components/level/levels";
+import Cards from "@/app/components/level/zoom";
+import LevelHeader from "@/app/components/level/levelheader";
 
 // カスタムテーマの作成
 let theme = createTheme({
@@ -44,19 +40,6 @@ let theme = createTheme({
 theme = responsiveFontSizes(theme);
 
 // スタイル付きコンポーネント
-const StyledCard = styled(Card)(({ theme }) => ({
-  cursor: "pointer",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-10px)",
-    boxShadow: "0 8px 16px 0 rgba(0,0,0,0.2)",
-  },
-}));
-
-const LevelButton = styled(Button)(({ theme }) => ({
-  marginTop: theme.spacing(1),
-  fontWeight: 600,
-}));
 
 export default function LevelSelect() {
   const router = useRouter();
@@ -64,21 +47,6 @@ export default function LevelSelect() {
   const handleLevelSelect = (level: string) => {
     router.push(`/gaming?level=${level}`);
   };
-
-  const levels = [
-    { name: "Easy", description: "Perfect for beginners", color: "#4caf50" },
-    {
-      name: "Medium",
-      description: "For intermediate typers",
-      color: "#ff9800",
-    },
-    { name: "Hard", description: "Challenge yourself", color: "#f44336" },
-    {
-      name: "Advanced",
-      description: "For the ultimate challenge",
-      color: "#9c27b0",
-    },
-  ];
 
   return (
     <ThemeProvider theme={theme}>
@@ -93,36 +61,16 @@ export default function LevelSelect() {
           py: 4,
         }}
       >
-        <Grow in={true} timeout={1000}>
-          <Typography variant="h3" sx={{ mb: 6, textAlign: "center" }}>
-            Select Your Challenge
-          </Typography>
-        </Grow>
+        <LevelHeader />
         <Grid container spacing={4} justifyContent="center">
-          {levels.map((level, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Zoom in={true} style={{ transitionDelay: `${index * 200}ms` }}>
-                <StyledCard>
-                  <CardContent sx={{ textAlign: "center", p: 3 }}>
-                    <Typography variant="h5" sx={{ mb: 2, color: level.color }}>
-                      {level.name}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 2 }}>
-                      {level.description}
-                    </Typography>
-                    <LevelButton
-                      variant="contained"
-                      color="primary"
-                      onClick={() =>
-                        handleLevelSelect(level.name.toLowerCase())
-                      }
-                      fullWidth
-                    >
-                      Start
-                    </LevelButton>
-                  </CardContent>
-                </StyledCard>
-              </Zoom>
+          {levels.map((level) => (
+            <Grid item xs={12} sm={6} md={3} key={level.id}>
+              <Cards
+                name={level.name}
+                description={level.description}
+                color={level.color}
+                onClick={() => handleLevelSelect(level.name)}
+              />
             </Grid>
           ))}
         </Grid>
