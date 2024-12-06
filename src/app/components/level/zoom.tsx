@@ -1,16 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
-import {
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  createTheme,
-  responsiveFontSizes,
-  Zoom,
-} from "@mui/material";
+import { Button, Card, CardContent, Typography, Zoom } from "@mui/material";
 import { styled } from "@mui/system";
 
 // スタイル付きコンポーネント
