@@ -1,5 +1,5 @@
 export const wordsList = {
-  easy: [
+  Easy: [
     { word: "apple", meaning: "リンゴ" },
     { word: "book", meaning: "本" },
     { word: "chair", meaning: "椅子" },
@@ -66,7 +66,7 @@ export const wordsList = {
     { word: "farm", meaning: "農場" },
     { word: "animal", meaning: "動物" },
   ],
-  medium: [
+  Medium: [
     { word: "accomplish", meaning: "達成する" },
     { word: "budget", meaning: "予算" },
     { word: "collaborate", meaning: "協力する" },
@@ -88,7 +88,7 @@ export const wordsList = {
     { word: "innovate", meaning: "革新する" },
     { word: "objective", meaning: "目的" },
   ],
-  hard: [
+  Hard: [
     { word: "entrepreneur", meaning: "起業家" },
     { word: "delegation", meaning: "委任" },
     { word: "philanthropy", meaning: "慈善活動" },
@@ -110,7 +110,7 @@ export const wordsList = {
     { word: "subsidy", meaning: "補助金" },
     { word: "tariff", meaning: "関税" },
   ],
-  advanced: [
+  Advanced: [
     { word: "amortization", meaning: "償却" },
     { word: "contingency", meaning: "偶発事象" },
     { word: "dichotomy", meaning: "二分法" },
