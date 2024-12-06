@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/firebase/firebase"; // Firebase初期化ファイル
+import { timeStamp } from "console";
 
 export const useFetchUserData = (userId: string) => {
   const [gameDataList, setGameDataList] = useState<any[]>([]); // ゲームデータリストを保持
@@ -12,7 +13,8 @@ export const useFetchUserData = (userId: string) => {
         // FirestoreのGameDataコレクションからuserIdに基づいてすべてのゲームデータを取得
         const gameDataQuery = query(
           collection(db, "GameData"),
-          where("userId", "==", userId)
+          where("userId", "==", userId),
+          orderBy("timestamp", "desc")
         );
         const querySnapshot = await getDocs(gameDataQuery);
         console.log("GameData Query Snapshot:", querySnapshot.docs);

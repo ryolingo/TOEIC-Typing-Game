@@ -12,4 +12,5 @@ export type GameData = {
   level: string;
   timestamp: any;
   incorrectWords: IncorrectWord[];
+  gameId: string;
 };
