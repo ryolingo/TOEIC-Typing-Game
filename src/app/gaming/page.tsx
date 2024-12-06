@@ -102,7 +102,7 @@ export default function TypingGame() {
 
   const setRandomWord = () => {
     const levelWords =
-      wordsList[level as keyof typeof wordsList] || wordsList.easy;
+      wordsList[level as keyof typeof wordsList] || wordsList.Easy;
     const randomIndex = Math.floor(Math.random() * levelWords.length);
     const randomWord = levelWords[randomIndex];
     setWord(randomWord.word);
