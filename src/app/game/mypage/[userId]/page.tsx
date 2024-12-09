@@ -58,10 +58,22 @@ const theme = createTheme({
 export default function Mypage() {
   const params = useParams();
   const userId = params.userId as string;
-
   const { gameDataList, loading } = useFetchUserData(
     Array.isArray(userId) ? userId[0] : userId
   );
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress size={60} thickness={4} />
+      </Box>
+    );
+  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -76,17 +88,7 @@ export default function Mypage() {
           >
             Game History{" "}
           </Typography>
-
-          {loading ? (
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              minHeight="50vh"
-            >
-              <CircularProgress size={60} thickness={4} />
-            </Box>
-          ) : gameDataList.length === 0 ? (
+          {gameDataList.length === 0 ? (
             <Box
               display="flex"
               justifyContent="center"
@@ -107,3 +109,18 @@ export default function Mypage() {
     </ThemeProvider>
   );
 }
+
+// import React from "react";
+// import { fetchUserData } from "@/app/lib/fetchUserData";
+// import Mypage from "@/app/components/mypage/gamecard";
+
+// export default async function UserMypage({
+//   params,
+// }: {
+//   params: { userId: string };
+// }) {
+//   const userId = params.userId;
+//   const gameDataList = await fetchUserData(userId);
+
+//   return <Mypage gameDataList={gameDataList} />;
+// }
