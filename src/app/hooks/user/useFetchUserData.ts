@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/firebase/firebase"; // Firebase初期化ファイル
-import { timeStamp } from "console";
 
 export const useFetchUserData = (userId: string) => {
   const [gameDataList, setGameDataList] = useState<any[]>([]); // ゲームデータリストを保持
