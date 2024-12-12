@@ -109,18 +109,3 @@ export default function Mypage() {
     </ThemeProvider>
   );
 }
-
-// import React from "react";
-// import { fetchUserData } from "@/app/lib/fetchUserData";
-// import Mypage from "@/app/components/mypage/gamecard";
-
-// export default async function UserMypage({
-//   params,
-// }: {
-//   params: { userId: string };
-// }) {
-//   const userId = params.userId;
-//   const gameDataList = await fetchUserData(userId);
-
-//   return <Mypage gameDataList={gameDataList} />;
-// }
