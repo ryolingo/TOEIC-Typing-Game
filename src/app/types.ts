@@ -14,3 +14,8 @@ export type GameData = {
   incorrectWords: IncorrectWord[];
   gameId: string;
 };
+
+export type EmailCredentials = {
+  email: string;
+  password: string;
+};
