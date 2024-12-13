@@ -112,7 +112,7 @@ export default function Home() {
         </Card>
 
         {/* 特徴セクション */}
-        <Box sx={{ width: "100%", mt: 6 }}>
+        <Box boxShadow="none" width="100%" sx={{ mt: 6 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             TOYPEの特徴
           </Typography>
@@ -120,7 +120,11 @@ export default function Home() {
             <Grid item xs={12} sm={4}>
               <Paper
                 elevation={2}
-                sx={{ padding: "20px", textAlign: "center" }}
+                sx={{
+                  padding: "20px",
+                  textAlign: "center",
+                  boxShadow: "none",
+                }}
               >
                 <EmojiEvents sx={{ fontSize: 40, color: "primary.main" }} />
                 <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
@@ -134,7 +138,7 @@ export default function Home() {
             <Grid item xs={12} sm={4}>
               <Paper
                 elevation={2}
-                sx={{ padding: "20px", textAlign: "center" }}
+                sx={{ padding: "20px", textAlign: "center", boxShadow: "none" }}
               >
                 <School sx={{ fontSize: 40, color: "secondary.main" }} />
                 <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
@@ -148,7 +152,7 @@ export default function Home() {
             <Grid item xs={12} sm={4}>
               <Paper
                 elevation={2}
-                sx={{ padding: "20px", textAlign: "center" }}
+                sx={{ padding: "20px", textAlign: "center", boxShadow: "none" }}
               >
                 <TrendingUp sx={{ fontSize: 40, color: "primary.main" }} />
                 <Typography variant="h6" fontWeight="bold" sx={{ mt: 2 }}>
