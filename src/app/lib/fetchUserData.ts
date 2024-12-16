@@ -41,7 +41,6 @@ export const useFetchUserData = (userId: string) => {
             };
           })
         );
-
         setGameDataList(allGameData);
         setLoading(false);
       } catch (error) {
