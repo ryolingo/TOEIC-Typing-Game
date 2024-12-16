@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
-import { db, auth } from "@/firebase/firebase";
 import { v4 as uuidv4 } from "uuid";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -17,7 +16,8 @@ import {
   createTheme,
   CssBaseline,
 } from "@mui/material";
-import { wordsList } from "@/app/components/game/WordList";
+import { wordsList } from "../../components/game/WordList";
+import { auth, db } from "@/firebase/firebase";
 
 const theme = createTheme({
   palette: {
@@ -174,7 +174,7 @@ export default function TypingGame() {
             setGameOver(true);
             saveGameData(scoreRef.current);
             router.push(
-              `game/results?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
+              `/game/results?score=${scoreRef.current}&gameId=${gameId}&level=${level}`
             );
           }
           return prev - 1;
